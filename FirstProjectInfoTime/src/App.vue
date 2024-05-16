@@ -1,70 +1,83 @@
 <template>
-  <div class="page">
-    <div class="left">
-      <form class="sort">
-        <h1> Sort </h1>
-        <label><input type="radio" name="sort" value="low2High" v-model="sortOrder" @change="updateSortOrder"> Price Low to High</label>
-        <br>
-        <label><input type="radio" name="sort" value="high2Low" v-model="sortOrder" @change="updateSortOrder"> Price High to Low</label>
-      </form>
-      <form class="brandSearch">
-        <h1> Brands </h1>
-        <input placeholder="Search Brand" v-model="brandSearchInput"></input>
-        <br>
-        <label><input type="checkbox" v-model="selectAllBrands"> Select All</label>
-        <br>
-        <label v-for="(brand, index) in filteredBrands" :key="index">
-          <input type="checkbox" v-model="selectedBrands" :value="brand"> {{ brand }}
+  <div class='fullpage'>
+    <div class="title"> market </div>
+    <div class="page">
+      <div class="left">
+        <form class="sort">
+          <h1> Sort </h1>
+          <label><input type="radio" name="sort" value="low2High" v-model="sortOrder" @change="updateSortOrder"> Price Low to High</label>
           <br>
-        </label> 
-      </form>
-      <form class="tagSearch">
-        <h1> Tags </h1>
-        <input placeholder="Search Tags" v-model="tagSearchInput"></input>
-        <br>
-        <label><input type="checkbox" v-model="selectAllTags"> Select All</label>
-        <br>
-        <label v-for="(tag, index) in filteredTags" :key="index">
-          <input type="checkbox" v-model="selectedTags" :value="tag"> {{tag}}
+          <label><input type="radio" name="sort" value="high2Low" v-model="sortOrder" @change="updateSortOrder"> Price High to Low</label>
+        </form>
+        <form class="brandSearch">
+          <h1> Brands </h1>
+          <input placeholder="Search Brand" v-model="brandSearchInput"></input>
           <br>
-        </label>
-      </form>
-    </div>
-    <div class="mid">
-      <div class="squares">
-        <div v-for="(item, index) in itemsOnPage" :key="index" class="square"> 
-          <p>{{ item.price }}</p>
-          <p>{{ item.tags }}</p>
-          <p>{{ item.manufacturer }}</p>
-          <button @click="addToSelectedItems(item)">Add</button>
+          <label><input type="checkbox" v-model="selectAllBrands"> Select All</label>
+          <br>
+          <label v-for="(brand, index) in filteredBrands" :key="index">
+            <input type="checkbox" v-model="selectedBrands" :value="brand"> {{ brand }}
+            <br>
+          </label> 
+        </form>
+        <form class="tagSearch">
+          <h1> Tags </h1>
+          <input placeholder="Search Tags" v-model="tagSearchInput"></input>
+          <br>
+          <label><input type="checkbox" v-model="selectAllTags"> Select All</label>
+          <br>
+          <label v-for="(tag, index) in filteredTags" :key="index">
+            <input type="checkbox" v-model="selectedTags" :value="tag"> {{tag}}
+            <br>
+          </label>
+        </form>
+      </div>
+      <div class="mid">
+        <div class="midtop">
+          <div class="midtitle">Products</div>
+          <label> <button class="addtop">ADD</button> <button class="shirttop">SHIRT</button>
+          </label>
+        </div>
+        <div class="squares">
+          <div v-for="(item, index) in itemsOnPage" :key="index" class="square"> 
+            <p> $ {{ item.price }}</p>
+            <p>{{ item.tags }}</p>
+            <p>{{ item.manufacturer }}</p>
+            <p>{{ item.slug }}</p>
+            <div class="buttonContainer">
+              <button @click="addToSelectedItems(item)">Add</button>
+            </div>
+          </div>
+        </div>
+        <div class="pagination">
+          <!-- Previous Ten Pages Button -->
+          <button @click="moveBack(10)"> << </button>
+          <!-- Previous Page Button -->
+          <button @click="moveBack(1)"> < </button>
+          <!-- Page Buttons -->
+          <button v-for="pageNumber in visiblePages" :key="pageNumber" @click="changePage(pageNumber)">
+            {{ pageNumber }}
+          </button>
+          <!-- Next Page Button -->
+          <button @click="moveForward(1)"> > </button>
+          <!-- Next Ten Pages Button -->
+          <button @click="moveForward(10)"> >></button>
         </div>
       </div>
-      <div class="pagination">
-        <!-- Previous Ten Pages Button -->
-        <button @click="moveBack(10)"> << </button>
-        <!-- Previous Page Button -->
-        <button @click="moveBack(1)"> < </button>
-        <!-- Page Buttons -->
-        <button v-for="pageNumber in visiblePages" :key="pageNumber" @click="changePage(pageNumber)">
-          {{ pageNumber }}
-        </button>
-        <!-- Next Page Button -->
-        <button @click="moveForward(1)"> > </button>
-        <!-- Next Ten Pages Button -->
-        <button @click="moveForward(10)"> >></button>
-      </div>
-    </div>
-    <div class="right"> 
-      <div class="bag">
-          <div v-if="selectedItems.size === 0">Your bag is empty. </div>
-          <div v-else>
-            <ul>
-              <li v-for="([item, quantity], index) in selectedItems" :key="index"> {{ item.manufacturer }} - {{ item.price }} ({{ quantity }}) 
-              <br></li>  
-            </ul>
-            <br>
-            <p> Total Price: {{ calculateTotalPrice() }}</p>
-          </div>
+      <div class="right"> 
+        <div class="bag">
+            <div v-if="selectedItems.size === 0">Your bag is empty. </div>
+            <div v-else>
+              <ul>
+                <li v-for="([item, quantity], index) in selectedItems" :key="index"> {{ item.manufacturer }} - {{ item.price }} ({{ quantity }}) 
+                <br></li>  
+              </ul>
+              <br>
+              <div class="price"> {{ calculateTotalPrice() }} </div>
+              <br>
+              <div> <button @click="remove()"> Remove All Items </button> </div>
+            </div>
+        </div>
       </div>
     </div>
   </div>
@@ -198,82 +211,133 @@ const calculateTotalPrice = () => {
   }
   return totalPrice; };
 
+const remove = (event) => {
+  selectedItems.value = new Map();
+};
+
 </script>
 
 <style scoped>
+.fullpage{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.title{
+  background-color: blue;
+  color: white;
+  font-size: 25px;
+  text-align: center;
+  width: 100%;
+}
+
 .left{
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
+  gap: 5px;
 }
 
 .right{
   width: 200px;
   justify-content: flex-start;
   align-items: flex-start;
-  background-color: rgb(180,210,290);
 }
 
 .mid {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  gap: 5px;
 }
 
 .page{
   display: flex;
   flex-direction: row;
-  width: 1500px;
   gap: 20px;
 }
 
+h1{
+  font-size: 15px;
+}
+
+p{
+  font-size: 12px;
+}
+
 .sort, .brandSearch, .tagSearch{
+  border: solid;
   width: 200px;
-  height: 150px;
 }
 
 .sort{ 
-  height: 100px;
-  background-color: rgb(110, 110, 220);
-  padding-left: 5px;}
+  height: auto;
+  padding: 10px;
+  }
 
 .brandSearch{ 
-  background-color: rgb(110, 220, 110);
-  height: 150px; 
+  height: 120px; 
   overflow: auto;
-  padding-left: 5px;}
+  padding: 10px;
+  }
 
 .tagSearch{ 
-  background-color: rgb(220, 110, 110);
-  height: 150px; 
+  height: 120px;
   overflow: auto;
-  padding-left: 5px;}
+  padding: 10px;}
+
+.midtitle{
+  font-size: 15px;
+  font-weight:bold;
+}
 
 .squares{
   display: flex;
   flex-direction: row;
+  justify-content: flex-start;
   flex-wrap: wrap;
-  justify-content: space-evenly;
-  gap: 10px;
+  gap: 5px;
 
-  width: 1000px;
+  width: 800px;
   height: 600px;
 
-  border: solid;
-  border-width: 3px;
-  border-color: black;
   overflow: auto;
 }
 .square{
-  padding-left: 5px;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
 
-  background-color:pink;
-  width: 220px;
-  height: 150px;
-  margin: 5px 5px;
+  width: calc(24.5%);
+  height: auto;
 
+  box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.5);
+}
+
+.buttonContainer {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background-color:blue;
+}
+
+.buttonContainer button{
+  color:white;
+  background-color:blue;
+}
+
+.bag{
   border:solid;
-  border-color:black;
+  border-color:blue;
+  border-width:3px;
+  padding: 5px;
+}
+
+.price{
+  display: flex;
+  flex-direction: row-reverse;
 }
 </style>
